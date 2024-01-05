@@ -42,9 +42,6 @@ pub fn run() !void {
 fn handleRequest(response: *http.Server.Response) !void {
     log.info("{s} {s}", .{ @tagName(response.request.method), response.request.target });
 
-    const body = try response.reader().readAllAlloc(gpa, 8192);
-    defer gpa.free(body);
-
     if (response.request.headers.contains("connection")) {
         try response.headers.append("connection", "keep-alive");
     }
