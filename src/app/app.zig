@@ -7,11 +7,11 @@ const router = @import("./router.zig");
 var gpa_struct = std.heap.GeneralPurposeAllocator(.{}){};
 const gpa = gpa_struct.allocator();
 
-const server_addr = "127.0.0.1";
-const server_port = 8000;
+const server_addr = "192.168.0.16";
+const server_port = 8080;
 
 pub fn run() !void {
-    var server = http.Server.init(gpa, .{ .reuse_address = true });
+    var server = http.Server.init(gpa, .{ .reuse_address = true, .reuse_port = true });
     defer server.deinit();
 
     router.init(gpa);
@@ -21,21 +21,36 @@ pub fn run() !void {
     const address = std.net.Address.parseIp(server_addr, server_port) catch unreachable;
     try server.listen(address);
 
-    outer: while (true) {
-        var response = try server.accept(.{
-            .allocator = gpa,
-        });
-        defer response.deinit();
+    var threads: [256]std.Thread = undefined;
 
-        while (response.reset() != .closing) {
-            response.wait() catch |err| switch (err) {
-                error.HttpHeadersInvalid => continue :outer,
-                error.EndOfStream => continue,
-                else => return err,
-            };
+    for (&threads) |*thread| {
+        thread.* = try std.Thread.spawn(.{}, (struct {
+            fn apply(serv: *http.Server) !void {
+                while (true) {
+                    var response = try serv.accept(.{
+                        .allocator = gpa,
+                    });
 
-            try handleRequest(&response);
-        }
+                    log.debug("Accepted connection {}", .{response.address});
+                    defer log.debug("Closed connection {}", .{response.address});
+                    defer response.deinit();
+
+                    while (response.reset() != .closing) {
+                        response.wait() catch |err| switch (err) {
+                            error.HttpHeadersInvalid => return,
+                            error.EndOfStream => continue,
+                            else => return,
+                        };
+
+                        try handleRequest(&response);
+                    }
+                }
+            }
+        }).apply, .{&server});
+    }
+
+    for (&threads) |*thread| {
+        thread.join();
     }
 }
 

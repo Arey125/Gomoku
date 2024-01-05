@@ -11,7 +11,12 @@ const RequestHandler = *const fn (*Response) WriteError!void;
 
 var allocator: std.mem.Allocator = undefined;
 
+var mutex = std.Thread.Mutex{};
+
 fn rootHandler(res: *Response) WriteError!void {
+    mutex.lock();
+    defer mutex.unlock();
+
     var indexFile = std.fs.cwd().openFile("./public/index.html", .{}) catch unreachable;
     defer indexFile.close();
 
@@ -20,9 +25,12 @@ fn rootHandler(res: *Response) WriteError!void {
 }
 
 fn styleHandler(res: *Response) WriteError!void {
-    var indexFile = std.fs.cwd().openFile("./public/style.css", .{}) catch unreachable;
-    defer indexFile.close();
-    const buf = indexFile.readToEndAlloc(allocator, 8096) catch unreachable;
+    mutex.lock();
+    defer mutex.unlock();
+
+    var file = std.fs.cwd().openFile("./public/style.css", .{}) catch unreachable;
+    defer file.close();
+    const buf = file.readToEndAlloc(allocator, 8096) catch unreachable;
     try res.writeAll(buf);
 }
 
