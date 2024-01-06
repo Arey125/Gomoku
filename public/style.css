@@ -1,4 +1,4 @@
-#board {
+.board-cells {
   display: grid;
   border: 1px solid black;
   width: fit-content;
