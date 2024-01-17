@@ -7,7 +7,11 @@
   grid-template-rows: repeat(10, 30px);
 }
 
-.cell {
+.cell-empty {
   border: 1px solid black;
   cursor: pointer;
+}
+
+.cell-marked {
+  border: 1px solid black;
 }

@@ -38,6 +38,7 @@ const routes = ComptimeStringMap(RequestHandler, .{
     .{ "/", rootHandler },
     .{ "/style.css", styleHandler },
     .{ "/board", board.handler },
+    .{ "/board/restart", board.restartHandler },
 });
 
 pub fn init(alloc: std.mem.Allocator) void {
