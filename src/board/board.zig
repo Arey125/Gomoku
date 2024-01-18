@@ -49,10 +49,12 @@ pub fn handler(res: *Response) !void {
         }
     }
 
+    const winnerOptional = winChecker.checkForWin();
+
     try res.writer().print(@embedFile("./header.html"), .{mark});
     try res.writer().writeAll("<div class=\"board-cells\">");
 
-    const can_make_move = player_index == current_player;
+    const can_make_move = player_index == current_player and winnerOptional == null;
 
     const hx_attr = if (can_make_move) " hx-post=\"board\" hx-target=\"#board\" hx-include=\"find input\"" else "";
 
@@ -64,7 +66,7 @@ pub fn handler(res: *Response) !void {
         }
     }
     try res.writer().writeAll("</div>");
-    if (winChecker.checkForWin()) |winner| {
+    if (winnerOptional) |winner| {
         try res.writer().print(@embedFile("./win.html"), .{winner});
     }
 }
