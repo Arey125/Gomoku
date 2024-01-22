@@ -1,5 +1,7 @@
 const std = @import("std");
 
+const dispatcher = @import("../dispatcher/dispatcher.zig");
+const lobby = @import("../lobby/lobby.zig");
 const board = @import("../board/board.zig");
 
 const Response = std.http.Server.Response;
@@ -37,6 +39,10 @@ fn styleHandler(res: *Response) WriteError!void {
 const routes = ComptimeStringMap(RequestHandler, .{
     .{ "/", rootHandler },
     .{ "/style.css", styleHandler },
+    .{ "/dispatcher", dispatcher.handler },
+
+    .{ "/lobby", lobby.handler },
+
     .{ "/board", board.handler },
     .{ "/board/restart", board.restartHandler },
 });

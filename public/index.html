@@ -11,7 +11,7 @@
 
 <body>
   <h1>Gomoku</h1>
-  <div id="board" hx-get="/board" hx-trigger="load, every 1s" hx-swap="innerHTML"></div>
+  <div hx-get="/dispatcher" hx-trigger="load" hx-swap="innerHTML"></div>
 </body>
 
 </html>

@@ -19,6 +19,23 @@ pub fn init(alloc: std.mem.Allocator) void {
     winChecker.init(&map);
 }
 
+pub fn isPlaying(ip: u32) bool {
+    for (players) |player| {
+        if (player == ip) {
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn addPlayer(ip: u32) void {
+    if (players[0] == null) {
+        players[0] = ip;
+    } else if (players[1] == null) {
+        players[1] = ip;
+    }
+}
+
 pub fn handler(res: *Response) !void {
     mutex.lock();
     defer mutex.unlock();
